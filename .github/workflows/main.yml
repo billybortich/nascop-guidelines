@@ -32,6 +32,10 @@ jobs:
       - name: Install SDK
         run: yes | sdkmanager --licenses || true && sdkmanager "platforms;android-36" "build-tools;34.0.0"
 
+      - name: Fix duplicate color resource
+        working-directory: nascop-app/android
+        run: rm -f app/src/main/res/values/ic_launcher_background.xml
+
       - name: Make gradlew executable
         working-directory: nascop-app/android
         run: chmod +x gradlew
