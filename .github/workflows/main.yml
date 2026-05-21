@@ -19,6 +19,7 @@ jobs:
         working-directory: nascop-app
         run: |
           npm install
+          npm run build
           npx cap sync android
 
       - uses: actions/setup-java@v4
