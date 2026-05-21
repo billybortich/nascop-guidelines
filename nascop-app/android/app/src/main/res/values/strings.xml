@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Kenya HIV Guidelines</string>
+    <string name="title_activity_main">Kenya HIV/STI/VH Guidelines</string>
+    <string name="package_name">ke.go.health.nascop.guidelines</string>
+    <string name="custom_url_scheme">ke.go.health.nascop.guidelines</string>
+</resources>

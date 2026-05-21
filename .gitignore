@@ -1,0 +1,7 @@
+node_modules/
+nascop-app/android/.gradle/
+nascop-app/android/app/build/
+nascop-app/android/capacitor-cordova-android-plugins/build/
+nascop-app/android/build/
+*.bat
+*.ps1
