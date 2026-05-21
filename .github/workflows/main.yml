@@ -10,19 +10,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies and sync Capacitor
+        working-directory: nascop-app
+        run: |
+          npm install
+          npx cap sync android
+
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: temurin
+
       - uses: android-actions/setup-android@v3
+
       - name: Install SDK
         run: yes | sdkmanager --licenses || true && sdkmanager "platforms;android-36" "build-tools;34.0.0"
+
       - name: Make gradlew executable
         working-directory: nascop-app/android
         run: chmod +x gradlew
+
       - name: Build APK
         working-directory: nascop-app/android
         run: ./gradlew assembleDebug --no-daemon
+
       - uses: actions/upload-artifact@v4
         with:
           name: Kenya-HIV-Guidelines-APK
