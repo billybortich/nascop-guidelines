@@ -268,21 +268,21 @@ export default function App() {
     try {
       const history = chatMessages.slice(-8).map(m => ({ role: m.role, content: m.content }));
       const resp = await fetch(
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyB9itgdUMMCvMgjz4q7CEVD1uBJxKTGJ5c",
-  {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents: [...history, { role: "user", parts: [{ text: userMsg }] }].map(m => ({
-        role: m.role === "assistant" ? "model" : "user",
-        parts: [{ text: m.content }]
-      }))
-    })
-  }
-);
-const data = await resp.json();
-const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
+   `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${import.meta.env.VITE_GEMINI_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            contents: [...history, { role: "user", content: userMsg }].map(m => ({
+              role: m.role === "assistant" ? "model" : "user",
+              parts: [{ text: m.content }]
+            }))
+          })
+        }
+      );
+      const data = await resp.json();
+      const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
