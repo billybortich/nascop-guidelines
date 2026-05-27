@@ -259,7 +259,7 @@ export default function App() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
 
-  const sendMessage = async () => {
+ const sendMessage = async () => {
     if (!chatInput.trim() || isLoading) return;
     const userMsg = chatInput.trim();
     setChatInput("");
@@ -267,33 +267,20 @@ export default function App() {
     setIsLoading(true);
     try {
       const history = chatMessages.slice(-8).map(m => ({ role: m.role, content: m.content }));
-      const resp = await fetch(
-   `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${import.meta.env.VITE_GEMINI_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-            contents: [...history, { role: "user", content: userMsg }].map(m => ({
-              role: m.role === "assistant" ? "model" : "user",
-              parts: [{ text: m.content }]
-            }))
-          })
-        }
-      );
-      const data = await resp.json();
-      const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
+      const apiKey = import.meta.env.VITE_GEMINI_KEY;
+      const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: SYSTEM_PROMPT,
-          messages: [...history, { role: "user", content: userMsg }]
+          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: [...history, { role: "user", content: userMsg }].map(m => ({
+            role: m.role === "assistant" ? "model" : "user",
+            parts: [{ text: m.content }]
+          }))
         })
       });
       const data = await resp.json();
-      const answer = data.content?.filter(b => b.type === "text").map(b => b.text).join("") || "No response received.";
+      const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
       setChatMessages(prev => [...prev, { role: "assistant", content: answer }]);
     } catch {
       setChatMessages(prev => [...prev, { role: "assistant", content: "Connection error. Please check your network and try again." }]);
