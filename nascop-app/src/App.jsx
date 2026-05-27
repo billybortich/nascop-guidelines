@@ -1,4 +1,5 @@
 import { GUIDELINES_FULL_TEXT } from './guidelines_text.js';
+import { useState, useRef, useEffect } from "react";
 
 const TEAL = { bg: "#0F6E56", light: "#E1F5EE", mid: "#1D9E75", dark: "#085041", text: "#04342C" };
 const AMBER = { bg: "#BA7517", light: "#FAEEDA", mid: "#EF9F27", dark: "#633806", text: "#412402" };
@@ -7,120 +8,7 @@ const BLUE = { bg: "#185FA5", light: "#E6F1FB", mid: "#378ADD", dark: "#0C447C",
 const PURPLE = { bg: "#534AB7", light: "#EEEDFE", mid: "#7F77DD", dark: "#3C3489", text: "#26215C" };
 const GREEN = { bg: "#3B6D11", light: "#EAF3DE", mid: "#639922", dark: "#27500A", text: "#173404" };
 
-const SYSTEM_PROMPT = "You are a clinical decision-support assistant for healthcare workers in Kenya. Answer questions strictly and only from the official Kenya Integrated Guidelines for Prevention, Treatment and Management of HIV, STIs and Viral Hepatitis 2026 Edition (NASCOP). Do not use any outside knowledge. If the answer is not in the guidelines say: This is not covered in the 2026 Kenya Guidelines. GUIDELINES DOCUMENT: " + GUIDELINES_FULL_TEXT;
-
-KEY GUIDELINE CONTENT:
-
-== ART REGIMENS ==
-- Preterm <37wks and <2kg: AZT+3TC+NVP
-- Birth–4 weeks (≥37wks, 2–2.9kg): ABC+3TC+pDTG
-- >4 weeks, 3–24.9kg: Paediatric ABC+3TC+DTG (pALD)
-- ≥25kg: TAF+3TC+DTG
-- ≥15 years: TAF/TDF+3TC+DTG (preferred)
-- Pregnant/Breastfeeding: TDF+3TC+DTG (preferred)
-- DTG-anchored regimens preferred across all ages
-- Use TAF for: PLHIV ≥60yrs, children ≥25kg switching from ABC, comorbidities (DM, HTN, osteoporosis risk, CrCl >30ml/min)
-- Same-day ART initiation; defer ONLY for CM or TB meningitis
-
-== VIRAL LOAD MONITORING ==
-- Baseline VL at ART start
-- Repeat at 3 months, 6 months, then every 6 months if suppressed
-- Treatment failure suspected: VL ≥1000 copies/ml after ≥3 months on ART
-- Persistent Low Level Viremia (pLLV): VL 200–999 on 2 consecutive measures
-- All VL ≥200: assess adherence, intensify support, repeat VL at 3 months
-- Confirmed failure (repeat VL ≥1000): consult RTWG, consider DRT
-
-== PEP ==
-- Initiate within 72 hours of exposure (sooner = better)
-- Duration: 28 days
-- Preferred regimen: TDF+3TC+DTG (adults/adolescents ≥25kg)
-- Follow-up: HIV test at baseline, 6 weeks, 3 months; STI/HBV screen
-- Contraindicated if source known HIV-negative or exposure >72h ago
-
-== PrEP ==
-Options:
-1. Daily oral PrEP: TDF/FTC or TDF/3TC (any HIV-negative adult at risk)
-2. Event-driven (ED) PrEP: 2 pills 2–24h before sex, 1 pill 24h after, 1 pill 48h after (MSM only)
-3. CAB-LA: 600mg IM injection – initiation: 2 doses 4 weeks apart, then every 8 weeks
-4. LEN PrEP: 927mg SC every 6 months
-5. Ring PrEP (DVR): dapivirine vaginal ring, changed every 28 days (women ≥18)
-- Screen for HIV at each visit; if seroconversion on PrEP: stop immediately, DRT, link to ART
-
-== ADVANCED HIV DISEASE (AHD) ==
-- Defined: CD4 <200, WHO stage 3 or 4, children <5 regardless of CD4
-- CD4 testing for: newly diagnosed, returning after ≥3 months TI, confirmed treatment failure, severely ill/hospitalized
-- Cryptococcal screening: CrAg blood test for all adolescents+adults with CD4 ≤200
-- Fluconazole prophylaxis: 12 weeks for CD4 <200 and negative CrAg
-- CM Induction: Liposomal AmB 10mg/kg single dose + Flucytosine 100mg/kg/day ÷4 doses × 14 days + Fluconazole 1200mg/day (adult) × 14 days
-- Defer ART until 5 weeks after CM treatment
-- STOP AIDS for children: Screen OIs, Treat OIs+malnutrition, Optimize ART, Prevent (CTX, fluconazole, TPT, vaccines)
-
-== TB/HIV ==
-- ICF tool screening at every visit
-- Presumptive TB → mWRD as initial diagnostic
-- LF-LAM for: AHD, danger signs, hospitalized, or outpatient presumptive TB
-- TB/HIV: start anti-TB first; ART within 2 weeks for pulmonary TB; defer 4–8 weeks for TB meningitis
-- TPT eligibility: TB screen negative → assess TPT; preferred: 3HP (3 months weekly INH+RIF) or 1HP (1 month daily INH+RIF)
-- Preferred ART with TB: DTG-based (adjust doses per rifampicin interaction – DTG 50mg BD)
-
-== CRYPTOCOCCAL MENINGITIS ==
-- All with positive CrAg → LP mandatory
-- Consolidation: Fluconazole 800mg/day × 8 weeks
-- Maintenance: Fluconazole 200mg/day × 1 year
-- Pre-emptive for non-meningeal disease (bCrAg+, CSF negative): Fluconazole 400mg/day × 2 weeks then 200mg/day × 8 weeks
-
-== PMTCT / TRIPLE ELIMINATION ==
-- Test for HIV, HBsAg, syphilis at 1st ANC; retest per schedule through delivery and breastfeeding
-- Preferred ART for PBFW: TDF+3TC+DTG
-- Vertical transmission risk assessment: 1st ANC, 3rd trimester, labour, postnatal
-- HEI DNA PCR: at birth/within 2 weeks, 6 weeks, 6 months, 12 months
-- Antibody test: 18 months, every 6 months, and 6 weeks after breastfeeding stops
-- High-risk HEI prophylaxis: ABC/3TC/DTG × 14 weeks, then NVP until 6 weeks after breastfeeding stops
-- Low-risk HEI: AZT+NVP birth–6 weeks, then NVP until 6 weeks after breastfeeding stops
-- HBV birth dose vaccine within 24 hours; HBIG for confirmed perinatal HBV exposure
-- TDF prophylaxis for HBsAg-positive pregnant women to prevent VT of HBV
-
-== STI MANAGEMENT ==
-- Kenya has shifted from syndromic to clinical/etiological diagnosis
-- Key syndromes → etiological workup required
-Genital Ulcer Disease: Syphilis (Treponema pallidum), Chancroid (H. ducreyi), Genital herpes (HSV-2)
-- Syphilis: Benzathine penicillin G 2.4MU IM single dose (primary/secondary/early latent); 3 doses weekly for late latent/unknown duration
-Urethritis/Cervicitis: Gonorrhoea (N. gonorrhoeae), Chlamydia (C. trachomatis)
-- Gonorrhoea: Ceftriaxone 500mg IM single dose + Azithromycin 1g oral single dose
-- Chlamydia: Doxycycline 100mg BD × 7 days or Azithromycin 1g single dose
-Vaginal discharge/Vaginitis: BV (Gardnerella), Trichomoniasis, Candidiasis
-- BV: Metronidazole 400–500mg BD × 7 days
-- Trichomoniasis: Metronidazole 2g single dose
-- Candida: Clotrimazole 100mg PV × 7 days or Fluconazole 150mg oral single dose
-PID: Cefoxitin 2g IV + Doxycycline 100mg IV, then oral to complete 14 days
-
-== VIRAL HEPATITIS ==
-HBV:
-- CHB: HBsAg detectable (6 months persistence in children)
-- Treatment eligibility: Liver disease severity OR HBV DNA >2000 IU/mL + ALT elevation OR coinfections/comorbidities
-- Preferred: TDF or Entecavir (ETV)
-- Children dosing: ETV oral solution ≥12yrs per weight; TDF ≥12yrs ≥35kg
-- Monitor: HBsAg, HBeAg/anti-HBe, HBV DNA, LFTs, fibrosis assessment
-- Non-invasive fibrosis: FIB-4, APRI, elastography
-
-HCV:
-- One-time anti-HCV for persons with recognized risk
-- Annual testing for ongoing risk
-- DAA regimens (adults): Sofosbuvir/Daclatasvir × 12 weeks (±Ribavirin for cirrhosis × 24 weeks); Sofosbuvir/Ledipasvir or Sofosbuvir/Velpatasvir per genotype
-- Children >3 years: Sofosbuvir/Ledipasvir or Sofosbuvir/Velpatasvir (genotype-specific)
-- SVR12 = cure; retest RNA 12 weeks after treatment
-
-== KEY & VULNERABLE POPULATIONS ==
-MSM, FSW, PWID, Transgender, Prisoners, AGYW, Migrants
-- Offer PrEP, condoms, regular STI/HIV testing, harm reduction, mental health support
-- PWID: needle/syringe programs, OST (methadone/buprenorphine), HIV and HCV testing and treatment
-
-== DSD (DIFFERENTIATED SERVICE DELIVERY) ==
-- Multi-month dispensing (MMD): 3–6 months supply for stable clients
-- Community refill groups, CARG, fast-track dispensing
-- Stable client: suppressed VL, on ART ≥6 months, no acute illness
-
-ALWAYS provide evidence-based responses aligned with the 2026 Kenya guidelines. Cite specific regimens, dosages, and schedules when relevant. Note if something requires RTWG consultation or specialist referral. Keep answers concise and clinically actionable.`;
+const SYSTEM_PROMPT = "You are a clinical decision-support assistant for healthcare workers in Kenya. Answer questions strictly and only from the official Kenya Integrated Guidelines for Prevention, Treatment and Management of HIV, STIs and Viral Hepatitis 2026 Edition (NASCOP). Do not use any outside knowledge. If the answer is not found in the guidelines, say: This is not covered in the 2026 Kenya Guidelines. Here is the full guidelines document: " + GUIDELINES_FULL_TEXT;
 
 const sections = [
   {
@@ -259,7 +147,7 @@ export default function App() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
 
- const sendMessage = async () => {
+  const sendMessage = async () => {
     if (!chatInput.trim() || isLoading) return;
     const userMsg = chatInput.trim();
     setChatInput("");
@@ -267,22 +155,18 @@ export default function App() {
     setIsLoading(true);
     try {
       const history = chatMessages.slice(-8).map(m => ({ role: m.role, content: m.content }));
-      const apiKey = import.meta.env.VITE_GEMINI_KEY;
-      const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey, {
+      const resp = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: [...history, { role: "user", content: userMsg }].map(m => ({
-            role: m.role === "assistant" ? "model" : "user",
-            parts: [{ text: m.content }]
-          }))
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: SYSTEM_PROMPT,
+          messages: [...history, { role: "user", content: userMsg }]
         })
       });
       const data = await resp.json();
-      const answer = data.candidates?.[0]?.content?.parts?.[0]?.text 
-        || data.error?.message 
-        || JSON.stringify(data).slice(0, 200);
+      const answer = data.content?.filter(b => b.type === "text").map(b => b.text).join("") || "No response received.";
       setChatMessages(prev => [...prev, { role: "assistant", content: answer }]);
     } catch {
       setChatMessages(prev => [...prev, { role: "assistant", content: "Connection error. Please check your network and try again." }]);
