@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { GUIDELINES_FULL_TEXT } from './guidelines_text.js';
 
 const TEAL = { bg: "#0F6E56", light: "#E1F5EE", mid: "#1D9E75", dark: "#085041", text: "#04342C" };
 const AMBER = { bg: "#BA7517", light: "#FAEEDA", mid: "#EF9F27", dark: "#633806", text: "#412402" };
@@ -7,7 +7,10 @@ const BLUE = { bg: "#185FA5", light: "#E6F1FB", mid: "#378ADD", dark: "#0C447C",
 const PURPLE = { bg: "#534AB7", light: "#EEEDFE", mid: "#7F77DD", dark: "#3C3489", text: "#26215C" };
 const GREEN = { bg: "#3B6D11", light: "#EAF3DE", mid: "#639922", dark: "#27500A", text: "#173404" };
 
-const SYSTEM_PROMPT = `You are a clinical decision-support assistant for healthcare workers in Kenya, trained on the Kenya Integrated Guidelines for Prevention, Treatment and Management of HIV, Sexually Transmitted Infections and Viral Hepatitis – 2026 Edition (NASCOP).
+const SYSTEM_PROMPT = `You are a clinical decision-support assistant for healthcare workers in Kenya. Answer questions strictly and only from the official Kenya Integrated Guidelines for Prevention, Treatment and Management of HIV, STIs and Viral Hepatitis 2026 Edition (NASCOP). Do not use any outside knowledge. If the answer is not in the guidelines, say "This is not covered in the 2026 Kenya Guidelines."
+
+GUIDELINES DOCUMENT:
+${GUIDELINES_FULL_TEXT}`;
 
 KEY GUIDELINE CONTENT:
 
@@ -268,7 +271,7 @@ export default function App() {
     try {
       const history = chatMessages.slice(-8).map(m => ({ role: m.role, content: m.content }));
       const apiKey = import.meta.env.VITE_GEMINI_KEY;
-      const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + apiKey, {
+      const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
