@@ -280,7 +280,9 @@ export default function App() {
         })
       });
       const data = await resp.json();
-      const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
+      const answer = data.candidates?.[0]?.content?.parts?.[0]?.text 
+        || data.error?.message 
+        || JSON.stringify(data).slice(0, 200);
       setChatMessages(prev => [...prev, { role: "assistant", content: answer }]);
     } catch {
       setChatMessages(prev => [...prev, { role: "assistant", content: "Connection error. Please check your network and try again." }]);
