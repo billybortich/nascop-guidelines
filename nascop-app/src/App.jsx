@@ -1,4 +1,4 @@
-import { GUIDELINES_FULL_TEXT } from './guidelines_text.js';
+import { GUIDELINES_FULL_TEXT } from './guidelines_text_v2.js';
 import { useState, useRef, useEffect } from "react";
 
 const TEAL = { bg: "#0F6E56", light: "#E1F5EE", mid: "#1D9E75", dark: "#085041", text: "#04342C" };
@@ -8,7 +8,7 @@ const BLUE = { bg: "#185FA5", light: "#E6F1FB", mid: "#378ADD", dark: "#0C447C",
 const PURPLE = { bg: "#534AB7", light: "#EEEDFE", mid: "#7F77DD", dark: "#3C3489", text: "#26215C" };
 const GREEN = { bg: "#3B6D11", light: "#EAF3DE", mid: "#639922", dark: "#27500A", text: "#173404" };
 
-const SYSTEM_PROMPT = "You are a clinical decision-support assistant for healthcare workers in Kenya. Answer questions strictly and only from the official Kenya Integrated Guidelines for Prevention, Treatment and Management of HIV, STIs and Viral Hepatitis 2026 Edition (NASCOP). Do not use any outside knowledge. If the answer is not found in the guidelines, say: This is not covered in the 2026 Kenya Guidelines. Here is the full guidelines document: " + GUIDELINES_FULL_TEXT;
+const SYSTEM_PROMPT = "You are a clinical decision-support assistant for healthcare workers in Kenya. Answer questions strictly and only using the official Kenya Integrated Guidelines for Prevention, Treatment and Management of HIV, STIs and Viral Hepatitis 2026 Edition (NASCOP), provided in full below. Do not use outside knowledge or invent information. Always cite specific dosages, regimens, timelines and eligibility criteria exactly as written in the document. If something is not covered in the document, clearly say so rather than guessing. Keep answers concise and clinically actionable.\n\nFULL GUIDELINES DOCUMENT:\n" + GUIDELINES_FULL_TEXT;
 
 const sections = [
   {
@@ -155,18 +155,20 @@ export default function App() {
     setIsLoading(true);
     try {
       const history = chatMessages.slice(-8).map(m => ({ role: m.role, content: m.content }));
-      const resp = await fetch("https://api.anthropic.com/v1/messages", {
+      const apiKey = import.meta.env.VITE_GEMINI_KEY;
+      const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: SYSTEM_PROMPT,
-          messages: [...history, { role: "user", content: userMsg }]
+          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: [...history, { role: "user", content: userMsg }].map(m => ({
+            role: m.role === "assistant" ? "model" : "user",
+            parts: [{ text: m.content }]
+          }))
         })
       });
       const data = await resp.json();
-      const answer = data.content?.filter(b => b.type === "text").map(b => b.text).join("") || "No response received.";
+      const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || data.error?.message || "No response received.";
       setChatMessages(prev => [...prev, { role: "assistant", content: answer }]);
     } catch {
       setChatMessages(prev => [...prev, { role: "assistant", content: "Connection error. Please check your network and try again." }]);
