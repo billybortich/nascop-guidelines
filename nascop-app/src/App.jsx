@@ -156,7 +156,7 @@ export default function App() {
     try {
       const history = chatMessages.slice(-8).map(m => ({ role: m.role, content: m.content }));
       const apiKey = import.meta.env.VITE_GEMINI_KEY;
-      const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey, {
+      const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
